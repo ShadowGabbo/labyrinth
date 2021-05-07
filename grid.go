@@ -7,6 +7,7 @@ import (
 	"log"
 	"math"
 	"math/rand"
+	"time"
 )
 
 /*
@@ -21,8 +22,8 @@ PART 2-SOLVE A LABYRINTH-
 Dijkstra's algoritm to resolve it
  */
 
-const rows int = 20
-const cols int = 20
+const rows int = 10
+const cols int = 10
 const sides int = 4
 const offset float64 = 20.0
 
@@ -44,12 +45,31 @@ func main() {
 
 //run function
 func run(ctx *canvas.Context) {
+	grid := CreateStarter()
 	ctx.SetLineWidth(2)
 	ctx.SetStrokeStyleString("#8806ce")
 	h := &labyrinth{ctx: ctx}
-	var grid []square
-	h.draw(grid)
-	ctx.Flush()
+	fmt.Println("Start animation...")
+	for {
+		select {
+		case event := <-ctx.Events():
+			if _, ok := event.(canvas.CloseEvent); ok {
+				fmt.Println("Close Event...")
+				return
+			}
+		default:
+			if exit(grid){
+				PrintGrid(grid)
+				fmt.Println("Succefully finished the algoritm...")
+				return
+			}else{
+				grid = RandomSquares(grid)
+				h.draw(grid,ctx)
+				ctx.Flush()
+				time.Sleep(time.Second / 2)
+			}
+		}
+	}
 }
 
 //struct for cell
@@ -64,47 +84,20 @@ type labyrinth struct {
 	x, y float64
 }
 
-//draw labyrinth
-func (h *labyrinth) draw(grid []square) {
-	h.x = 50.0
-	h.y = 50.0
+func CreateStarter()[]square{
 	var id int = 1
-	grid = make([]square,rows*cols)
-	for row:=0; row < rows; row++{
+	grid := make([]square,rows*cols)
+	for row:=0; row < rows; row++ {
 		for col := 0; col < cols; col++ {
 			for side := 0; side < sides; side++ {
 				switch side {
 				case 0:
-					h.ctx.BeginPath()
-					h.ctx.MoveTo(h.x, h.y)
-					h.ctx.LineTo(h.x + offset, h.y)
-					h.ctx.Stroke()
-					h.ctx.ClosePath()
-					h.x = h.x + offset
 					grid[id-1].side_front = true
 				case 1:
-					h.ctx.BeginPath()
-					h.ctx.MoveTo(h.x, h.y)
-					h.ctx.LineTo(h.x, h.y - offset)
-					h.ctx.Stroke()
-					h.ctx.ClosePath()
-					h.y = h.y - offset
 					grid[id-1].side_right = true
 				case 2:
-					h.ctx.BeginPath()
-					h.ctx.MoveTo(h.x, h.y)
-					h.ctx.LineTo(h.x - offset, h.y)
-					h.ctx.Stroke()
-					h.ctx.ClosePath()
-					h.x = h.x - 20
 					grid[id-1].side_left = true
 				case 3:
-					h.ctx.BeginPath()
-					h.ctx.MoveTo(h.x, h.y)
-					h.ctx.LineTo(h.x, h.y + offset)
-					h.ctx.Stroke()
-					h.ctx.ClosePath()
-					h.y = h.y + offset
 					grid[id-1].side_back = true
 				}
 			}
@@ -112,48 +105,95 @@ func (h *labyrinth) draw(grid []square) {
 			grid[id-1].col = col + 1
 			grid[id-1].row = row + 1
 			id++
-			h.x = h.x + offset
 		}
-		h.x = h.x - float64(cols) * offset
-		h.y = h.y + offset
 	}
-	PrintGrid(grid)
+	return grid
 }
 
-//generate 2 random num that are id's adjoins
-func RandomSquares(grid []square){
-	for{
-		random_num1:=rand.Intn(rows*cols)+1
-		random_num2:=rand.Intn(rows*cols)+1
-		if ok,row1,col1,row2,col2:=SearchRandomInGrid(random_num1,random_num2,grid);ok {
-			if Adjoins(row1,col1,row2,col2) && DifferentId(random_num1,random_num2) {
-				BreakWall(grid,random_num1,random_num2,row1,row2,col1,col2)
-				break
+//draw labyrinth
+func (h *labyrinth) draw(grid []square,ctx *canvas.Context) {
+	h.x = 50.0
+	h.y = 50.0
+	var count int
+	for row:=1; row <= rows; row++ {
+		for col := 1; col <= cols; col++ {
+			for side := 0; side < sides; side++ {
+				switch side {
+				case 0:
+					if grid[count].side_front {
+						h.ctx.BeginPath()
+						h.ctx.MoveTo(h.x, h.y)
+						h.ctx.LineTo(h.x+offset, h.y)
+						h.ctx.Stroke()
+						h.ctx.ClosePath()
+						h.x = h.x + offset
+					}
+				case 1:
+					if grid[count].side_right {
+						h.ctx.BeginPath()
+						h.ctx.MoveTo(h.x, h.y)
+						h.ctx.LineTo(h.x, h.y-offset)
+						h.ctx.Stroke()
+						h.ctx.ClosePath()
+						h.y = h.y - offset
+					}
+				case 2:
+					if grid[count].side_back {
+						h.ctx.BeginPath()
+						h.ctx.MoveTo(h.x, h.y)
+						h.ctx.LineTo(h.x-offset, h.y)
+						h.ctx.Stroke()
+						h.ctx.ClosePath()
+						h.x = h.x - 20
+					}
+				case 3:
+					if grid[count].side_left {
+						h.ctx.BeginPath()
+						h.ctx.MoveTo(h.x, h.y)
+						h.ctx.LineTo(h.x, h.y+offset)
+						h.ctx.Stroke()
+						h.ctx.ClosePath()
+						h.y = h.y + offset
+					}
+				}
+			}
+			h.x = h.x + offset
+			count++
+		}
+		h.x = h.x - float64(cols)*offset
+		h.y = h.y + offset
+	}
+}
+
+func exit(grid []square)bool{
+	var target int
+	for i, square := range grid{
+		if i==0{
+			target = square.id
+		}else{
+			if square.id!=target{
+				return false
 			}
 		}
 	}
-	PrintGrid(grid)
+	return  true
 }
 
-//search if 2 num random are both in id of grid
-func SearchRandomInGrid(num1,num2 int, grid []square)(bool,int,int,int,int){
-	var target_one,target_two bool
-	var target_one_row,target_one_col int
-	var target_two_row,target_two_col int
-
-	for _,square:= range grid{
-		if square.id == num1{
-			target_one = true
-			target_one_row = square.row
-			target_one_col = square.col
+//generate 2 random num that are id's adjoins
+func RandomSquares(grid []square)[]square{
+	for{
+		random_row1:=rand.Intn(rows)+1
+		random_row2:=rand.Intn(rows)+1
+		random_col1:=rand.Intn(cols)+1
+		random_col2:=rand.Intn(cols)+1
+		adjoins := Adjoins(random_row1,random_row2,random_col1,random_col2)
+		differentId,id1,id2 := DifferentId(random_row1,random_row2,random_col1,random_col2,grid)
+			if adjoins && differentId{
+				BreakWall(grid,id1,id2,random_row1,random_row2,random_col1,random_col2)
+				break
+			}
 		}
-		if square.id == num2{
-			target_two = true
-			target_two_row = square.row
-			target_two_col = square.col
-		}
-	}
-	return target_one && target_two,target_one_row,target_one_col,target_two_row,target_two_col
+	return grid
 }
 
 //check if 2 cell are adjoins
@@ -168,12 +208,21 @@ func SameRow(col1,col2,row1,row2 int)bool{
 
 //check if cell are in the same col
 func SameCol(col1,col2,row1,row2 int)bool{
-	return col1==col2 && && math.Abs(float64(row2-row1))==1
+	return col1==col2 && math.Abs(float64(row2-row1))==1
 }
 
 //check if id are different
-func DifferentId(id1,id2 int)bool{
-	return id1!=id2
+func DifferentId(r1,r2,c1,c2 int,grid []square)(bool,int,int){
+	var id1,id2 int
+	for _,square := range grid{
+		if square.row == r1 && square.col == c1{
+			id1 = square.id
+		}
+		if square.row == r2 && square.col == c2{
+			id2 = square.id
+		}
+	}
+	return id1!=id2,id1,id2
 }
 
 //break the "wall" in the middle of 2 cell
