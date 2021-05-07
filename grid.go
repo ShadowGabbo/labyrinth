@@ -12,11 +12,6 @@ import (
 
 /*
 PART 1 -CREATE A LABYRINTH-
-Matrix nxm associate each cell a num
-Choose randomly 2 cell that has different value and that are adjoins
-Change the value of the max of the 2 num of the one lower and all the other max values
-Also brak the wall between them
-Continue until all numbers are equal
 
 PART 2-SOLVE A LABYRINTH-
 Dijkstra's algoritm to resolve it
@@ -72,13 +67,11 @@ func run(ctx *canvas.Context) {
 	}
 }
 
-//struct for cell
 type square struct{
 	side_front,side_back,side_left,side_right bool
 	id,row,col int
 }
 
-//struct for cells
 type labyrinth struct {
 	ctx  *canvas.Context
 	x, y float64
@@ -226,7 +219,6 @@ func DifferentId(r1,r2,c1,c2 int,grid []square)(bool,int,int){
 }
 
 //break the "wall" in the middle of 2 cell
-//not finished
 func BreakWall(grid []square, num1,num2,row1,row2,col1,col2 int){
 	var max int = Max(num1,num2)
 	var min int = Min(num1,num2)
