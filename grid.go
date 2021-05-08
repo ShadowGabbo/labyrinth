@@ -3,11 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/fzipp/canvas"
 	"log"
 	"math"
 	"math/rand"
 	"time"
+
+	"github.com/fzipp/canvas"
 )
 
 /*
@@ -22,7 +23,6 @@ const cols int = 10
 const sides int = 4
 const offset float64 = 20.0
 
-//main func
 func main() {
 	http := flag.String("http", ":8080", "HTTP service address (e.g., '127.0.0.1:8080' or just ':8080')")
 	flag.Parse()
@@ -38,12 +38,13 @@ func main() {
 	}
 }
 
-//run function
+// run function
 func run(ctx *canvas.Context) {
-	grid := CreateStarter()
+	lab := CreateStarter()
 	ctx.SetLineWidth(2)
 	ctx.SetStrokeStyleString("#8806ce")
-	h := &labyrinth{ctx: ctx}
+	h := &grid{ctx: ctx}
+	h.squares = lab
 	fmt.Println("Start animation...")
 	for {
 		select {
@@ -53,30 +54,38 @@ func run(ctx *canvas.Context) {
 				return
 			}
 		default:
-			if exit(grid){
-				PrintGrid(grid)
+			if exit(lab){
+				PrintGrid(lab)
 				fmt.Println("Succefully finished the algoritm...")
 				return
 			}else{
-				grid = RandomSquares(grid)
-				h.draw(grid,ctx)
+				h.update()
+				h.draw(ctx)
 				ctx.Flush()
-				time.Sleep(time.Second / 2)
+				time.Sleep(time.Second / 6)
 			}
 		}
 	}
 }
 
-type square struct{
+type grid struct{
+	squares []square
+	ctx  *canvas.Context
+	x,y float64
+}
+
+type square struct {
 	side_front,side_back,side_left,side_right bool
 	id,row,col int
-}
-
-type labyrinth struct {
 	ctx  *canvas.Context
-	x, y float64
 }
 
+// update func
+func (h *grid) update(){
+	h.squares = RandomSquares(h.squares)
+}
+
+// create a starter grid
 func CreateStarter()[]square{
 	var id int = 1
 	grid := make([]square,rows*cols)
@@ -103,8 +112,9 @@ func CreateStarter()[]square{
 	return grid
 }
 
-//draw labyrinth
-func (h *labyrinth) draw(grid []square,ctx *canvas.Context) {
+// draw labyrinth
+func (h *grid) draw(ctx *canvas.Context) {
+	ctx.ClearRect(0,0,1000,1000)
 	h.x = 50.0
 	h.y = 50.0
 	var count int
@@ -113,39 +123,47 @@ func (h *labyrinth) draw(grid []square,ctx *canvas.Context) {
 			for side := 0; side < sides; side++ {
 				switch side {
 				case 0:
-					if grid[count].side_front {
+					if h.squares[count].side_front {
 						h.ctx.BeginPath()
 						h.ctx.MoveTo(h.x, h.y)
 						h.ctx.LineTo(h.x+offset, h.y)
 						h.ctx.Stroke()
 						h.ctx.ClosePath()
 						h.x = h.x + offset
+					}else{
+						h.x = h.x + offset
 					}
 				case 1:
-					if grid[count].side_right {
+					if h.squares[count].side_right {
 						h.ctx.BeginPath()
 						h.ctx.MoveTo(h.x, h.y)
 						h.ctx.LineTo(h.x, h.y-offset)
 						h.ctx.Stroke()
 						h.ctx.ClosePath()
 						h.y = h.y - offset
+					}else{
+						h.y = h.y - offset
 					}
 				case 2:
-					if grid[count].side_back {
+					if h.squares[count].side_back {
 						h.ctx.BeginPath()
 						h.ctx.MoveTo(h.x, h.y)
 						h.ctx.LineTo(h.x-offset, h.y)
 						h.ctx.Stroke()
 						h.ctx.ClosePath()
 						h.x = h.x - 20
+					}else{
+						h.x = h.x - 20
 					}
 				case 3:
-					if grid[count].side_left {
+					if h.squares[count].side_left {
 						h.ctx.BeginPath()
 						h.ctx.MoveTo(h.x, h.y)
 						h.ctx.LineTo(h.x, h.y+offset)
 						h.ctx.Stroke()
 						h.ctx.ClosePath()
+						h.y = h.y + offset
+					}else{
 						h.y = h.y + offset
 					}
 				}
@@ -158,6 +176,7 @@ func (h *labyrinth) draw(grid []square,ctx *canvas.Context) {
 	}
 }
 
+// exit condition
 func exit(grid []square)bool{
 	var target int
 	for i, square := range grid{
@@ -172,7 +191,7 @@ func exit(grid []square)bool{
 	return  true
 }
 
-//generate 2 random num that are id's adjoins
+// generate 2 random num that are id's adjoins
 func RandomSquares(grid []square)[]square{
 	for{
 		random_row1:=rand.Intn(rows)+1
@@ -189,22 +208,22 @@ func RandomSquares(grid []square)[]square{
 	return grid
 }
 
-//check if 2 cell are adjoins
+// check if 2 cell are adjoins
 func Adjoins(row1,row2,col1,col2 int)bool {
 	return SameCol(col1, col2, row1, row2) || SameRow(col1, col2, row1, row2)
 }
 
-//check if cell are in the same row
+// check if cell are in the same row
 func SameRow(col1,col2,row1,row2 int)bool{
 	return row1==row2 && math.Abs(float64(col2-col1))==1
 }
 
-//check if cell are in the same col
+// check if cell are in the same col
 func SameCol(col1,col2,row1,row2 int)bool{
 	return col1==col2 && math.Abs(float64(row2-row1))==1
 }
 
-//check if id are different
+// check if id are different
 func DifferentId(r1,r2,c1,c2 int,grid []square)(bool,int,int){
 	var id1,id2 int
 	for _,square := range grid{
@@ -218,7 +237,7 @@ func DifferentId(r1,r2,c1,c2 int,grid []square)(bool,int,int){
 	return id1!=id2,id1,id2
 }
 
-//break the "wall" in the middle of 2 cell
+// break the "wall" in the middle of 2 cell
 func BreakWall(grid []square, num1,num2,row1,row2,col1,col2 int){
 	var max int = Max(num1,num2)
 	var min int = Min(num1,num2)
@@ -246,6 +265,7 @@ func BreakWall(grid []square, num1,num2,row1,row2,col1,col2 int){
 	}
 }
 
+// max of 2 num
 func Max(num1,num2 int)int{
 	if num1>num2{
 		return num1
@@ -253,6 +273,7 @@ func Max(num1,num2 int)int{
 	return num2
 }
 
+//min of 2 num
 func Min(num1,num2 int)int{
 	if num1<num2{
 		return num1
@@ -260,14 +281,14 @@ func Min(num1,num2 int)int{
 	return num2
 }
 
-//Print the grid data in terminal
+// print the grid data in terminal
 func PrintGrid(grid []square){
 	for _,square := range grid{
 		fmt.Println(square)
 	}
 }
 
-//link for localhost
+// link for localhost
 func httpLink(addr string) string {
 	if addr[0] == ':' {
 		addr = "localhost" + addr
