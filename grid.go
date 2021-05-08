@@ -19,7 +19,7 @@ Dijkstra's algoritm to resolve it
  */
 
 const rows int = 10
-const cols int = 10
+const cols int = 20
 const sides int = 4
 const offset float64 = 20.0
 
@@ -62,7 +62,7 @@ func run(ctx *canvas.Context) {
 				h.update()
 				h.draw(ctx)
 				ctx.Flush()
-				time.Sleep(time.Second / 6)
+				time.Sleep(time.Second / 8)
 			}
 		}
 	}
@@ -123,7 +123,8 @@ func (h *grid) draw(ctx *canvas.Context) {
 			for side := 0; side < sides; side++ {
 				switch side {
 				case 0:
-					if h.squares[count].side_front {
+					// back side
+					if h.squares[count].side_back {
 						h.ctx.BeginPath()
 						h.ctx.MoveTo(h.x, h.y)
 						h.ctx.LineTo(h.x+offset, h.y)
@@ -134,6 +135,7 @@ func (h *grid) draw(ctx *canvas.Context) {
 						h.x = h.x + offset
 					}
 				case 1:
+					// side right
 					if h.squares[count].side_right {
 						h.ctx.BeginPath()
 						h.ctx.MoveTo(h.x, h.y)
@@ -145,7 +147,8 @@ func (h *grid) draw(ctx *canvas.Context) {
 						h.y = h.y - offset
 					}
 				case 2:
-					if h.squares[count].side_back {
+					// side front
+					if h.squares[count].side_front {
 						h.ctx.BeginPath()
 						h.ctx.MoveTo(h.x, h.y)
 						h.ctx.LineTo(h.x-offset, h.y)
@@ -156,6 +159,7 @@ func (h *grid) draw(ctx *canvas.Context) {
 						h.x = h.x - 20
 					}
 				case 3:
+					// side left
 					if h.squares[count].side_left {
 						h.ctx.BeginPath()
 						h.ctx.MoveTo(h.x, h.y)
@@ -244,25 +248,40 @@ func BreakWall(grid []square, num1,num2,row1,row2,col1,col2 int){
 
 	for i, square := range grid{
 		if square.row == row1 && square.col == col1 && square.id == max{
+			fmt.Print("num1: ",num1," row: ",row1," col: ",col1," \nnum2: ",num2," row:",row2," col: ",col2,"\n")
 			switch {
 			case row1>row2:
+				fmt.Print("cambio: ",grid[i].id," front / ",grid[i-cols].id," back\n")
 				grid[i].side_front = false
 				grid[i-cols].side_back = false
 			case col1>col2:
+				fmt.Print("cambio: ",grid[i].id," left / ",grid[i-1].id," right\n")
 				grid[i].side_left = false
 				grid[i-1].side_right = false
 			case row2>row1:
+				fmt.Print("cambio: ",grid[i].id," back / ",grid[i+cols].id," front\n")
 				grid[i].side_back = false
 				grid[i+cols].side_front = false
 			case col2>col1:
+				fmt.Print("cambio: ",grid[i].id," right / ",grid[i+1].id," left\n")
 				grid[i].side_right = false
 				grid[i+1].side_left = false
 			}
+			fmt.Println()
+			grid = ChangeValues(max,min,grid)
 		}
+	}
+}
+
+// change all max to min
+func ChangeValues(max int,min int,grid []square)[]square{
+	for i, square:= range grid{
 		if square.id == max{
+			fmt.Println("cambio il valore di",max,"in",min)
 			grid[i].id = min
 		}
 	}
+	return grid
 }
 
 // max of 2 num
