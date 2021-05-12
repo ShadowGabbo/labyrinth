@@ -202,6 +202,11 @@ func RandomSquares(grid []square)[]square{
 		random_row2:=rand.Intn(rows)+1
 		random_col1:=rand.Intn(cols)+1
 		random_col2:=rand.Intn(cols)+1
+
+		if random_row1==random_row2 && random_col1==random_col2{
+			continue
+		}
+
 		adjoins := Adjoins(random_row1,random_row2,random_col1,random_col2)
 		differentId,id1,id2 := DifferentId(random_row1,random_row2,random_col1,random_col2,grid)
 			if adjoins && differentId{
