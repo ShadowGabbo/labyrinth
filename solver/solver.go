@@ -1,6 +1,5 @@
 package solver
 
-func solver(){
 	//Breadth-first search algorithm
 	//getting nodes:
 	//	-start from the start
@@ -13,4 +12,7 @@ func solver(){
 	//		-if im in a path and i will be in a wall is a node
 	//		-if i cant go left or right isnt a node, and so on...
 	//		-count node the min is the solver
+
+func GetNodes(grid struct){
+
 }

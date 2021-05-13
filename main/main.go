@@ -8,6 +8,8 @@ import (
 	"math/rand"
 	"time"
 
+	"../solver"
+
 	"github.com/fzipp/canvas"
 )
 
@@ -60,6 +62,7 @@ func run(ctx *canvas.Context) {
 				fmt.Println("Succefully finished the algoritm...")
 				h.AddStartStop(ctx)
 				ctx.Flush()
+				h.solver.GetNodes
 				return
 			}else{
 				h.update()
