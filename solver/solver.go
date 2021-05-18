@@ -13,6 +13,6 @@ package solver
 	//		-if i cant go left or right isnt a node, and so on...
 	//		-count node the min is the solver
 
-func GetNodes(grid struct){
+func GetNodes(grid *Grid){
 
 }

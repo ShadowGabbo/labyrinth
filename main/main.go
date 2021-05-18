@@ -46,8 +46,8 @@ func run(ctx *canvas.Context) {
 	lab := CreateStarter()
 	ctx.SetLineWidth(2)
 	ctx.SetStrokeStyleString("#8806ce")
-	h := &grid{ctx: ctx}
-	h.squares = lab
+	h := &Grid{Ctx: ctx}
+	h.Squares = lab
 	fmt.Println("Start animation...")
 	for {
 		select {
@@ -62,7 +62,7 @@ func run(ctx *canvas.Context) {
 				fmt.Println("Succefully finished the algoritm...")
 				h.AddStartStop(ctx)
 				ctx.Flush()
-				h.solver.GetNodes
+				solver.GetNodes(h)
 				return
 			}else{
 				h.update()
@@ -74,44 +74,44 @@ func run(ctx *canvas.Context) {
 	}
 }
 
-type grid struct{
-	squares []square
-	ctx  *canvas.Context
-	x,y float64
+type Grid struct{
+	Squares []Square
+	Ctx     *canvas.Context
+	X,Y     float64
 }
 
-type square struct {
-	side_front,side_back,side_left,side_right bool
-	id,row,col int
-	ctx  *canvas.Context
+type Square struct {
+	Side_front, Side_back, Side_left, Side_right bool
+	Id, Row, Col                                 int
+	Ctx                                          *canvas.Context
 }
 
 // update func
-func (h *grid) update(){
-	h.squares = RandomSquares(h.squares)
+func (h *Grid) update(){
+	h.Squares = RandomSquares(h.Squares)
 }
 
-// create a starter grid
-func CreateStarter()[]square{
+// create a starter Grid
+func CreateStarter()[]Square {
 	var id int = 1
-	grid := make([]square,rows*cols)
+	grid := make([]Square,rows*cols)
 	for row:=0; row < rows; row++ {
 		for col := 0; col < cols; col++ {
 			for side := 0; side < sides; side++ {
 				switch side {
 				case 0:
-					grid[id-1].side_front = true
+					grid[id-1].Side_front = true
 				case 1:
-					grid[id-1].side_right = true
+					grid[id-1].Side_right = true
 				case 2:
-					grid[id-1].side_left = true
+					grid[id-1].Side_left = true
 				case 3:
-					grid[id-1].side_back = true
+					grid[id-1].Side_back = true
 				}
 			}
-			grid[id-1].id = id
-			grid[id-1].col = col + 1
-			grid[id-1].row = row + 1
+			grid[id-1].Id = id
+			grid[id-1].Col = col + 1
+			grid[id-1].Row = row + 1
 			id++
 		}
 	}
@@ -119,10 +119,10 @@ func CreateStarter()[]square{
 }
 
 // draw labyrinth
-func (h *grid) draw(ctx *canvas.Context) {
+func (h *Grid) draw(ctx *canvas.Context) {
 	ctx.ClearRect(0,0,1000,1000)
-	h.x = 50.0
-	h.y = 50.0
+	h.X = 50.0
+	h.Y = 50.0
 	var count int
 	for row:=1; row <= rows; row++ {
 		for col := 1; col <= cols; col++ {
@@ -130,70 +130,70 @@ func (h *grid) draw(ctx *canvas.Context) {
 				switch side {
 				case 0:
 					// back side
-					if h.squares[count].side_back {
-						h.ctx.BeginPath()
-						h.ctx.MoveTo(h.x, h.y)
-						h.ctx.LineTo(h.x+offset, h.y)
-						h.ctx.Stroke()
-						h.ctx.ClosePath()
-						h.x = h.x + offset
+					if h.Squares[count].Side_back {
+						h.Ctx.BeginPath()
+						h.Ctx.MoveTo(h.X, h.Y)
+						h.Ctx.LineTo(h.X+offset, h.Y)
+						h.Ctx.Stroke()
+						h.Ctx.ClosePath()
+						h.X = h.X + offset
 					}else{
-						h.x = h.x + offset
+						h.X = h.X + offset
 					}
 				case 1:
 					// side right
-					if h.squares[count].side_right {
-						h.ctx.BeginPath()
-						h.ctx.MoveTo(h.x, h.y)
-						h.ctx.LineTo(h.x, h.y-offset)
-						h.ctx.Stroke()
-						h.ctx.ClosePath()
-						h.y = h.y - offset
+					if h.Squares[count].Side_right {
+						h.Ctx.BeginPath()
+						h.Ctx.MoveTo(h.X, h.Y)
+						h.Ctx.LineTo(h.X, h.Y-offset)
+						h.Ctx.Stroke()
+						h.Ctx.ClosePath()
+						h.Y = h.Y - offset
 					}else{
-						h.y = h.y - offset
+						h.Y = h.Y - offset
 					}
 				case 2:
 					// side front
-					if h.squares[count].side_front {
-						h.ctx.BeginPath()
-						h.ctx.MoveTo(h.x, h.y)
-						h.ctx.LineTo(h.x-offset, h.y)
-						h.ctx.Stroke()
-						h.ctx.ClosePath()
-						h.x = h.x - 20
+					if h.Squares[count].Side_front {
+						h.Ctx.BeginPath()
+						h.Ctx.MoveTo(h.X, h.Y)
+						h.Ctx.LineTo(h.X-offset, h.Y)
+						h.Ctx.Stroke()
+						h.Ctx.ClosePath()
+						h.X = h.X - 20
 					}else{
-						h.x = h.x - 20
+						h.X = h.X - 20
 					}
 				case 3:
 					// side left
-					if h.squares[count].side_left {
-						h.ctx.BeginPath()
-						h.ctx.MoveTo(h.x, h.y)
-						h.ctx.LineTo(h.x, h.y+offset)
-						h.ctx.Stroke()
-						h.ctx.ClosePath()
-						h.y = h.y + offset
+					if h.Squares[count].Side_left {
+						h.Ctx.BeginPath()
+						h.Ctx.MoveTo(h.X, h.Y)
+						h.Ctx.LineTo(h.X, h.Y+offset)
+						h.Ctx.Stroke()
+						h.Ctx.ClosePath()
+						h.Y = h.Y + offset
 					}else{
-						h.y = h.y + offset
+						h.Y = h.Y + offset
 					}
 				}
 			}
-			h.x = h.x + offset
+			h.X = h.X + offset
 			count++
 		}
-		h.x = h.x - float64(cols)*offset
-		h.y = h.y + offset
+		h.X = h.X - float64(cols)*offset
+		h.Y = h.Y + offset
 	}
 }
 
 // exit condition
-func exit(grid []square)bool{
+func exit(grid []Square)bool{
 	var target int
 	for i, square := range grid{
 		if i==0{
-			target = square.id
+			target = square.Id
 		}else{
-			if square.id!=target{
+			if square.Id !=target{
 				return false
 			}
 		}
@@ -201,8 +201,8 @@ func exit(grid []square)bool{
 	return  true
 }
 
-// generate 2 random num that are id's adjoins
-func RandomSquares(grid []square)[]square{
+// generate 2 random num that are Id's adjoins
+func RandomSquares(grid []Square)[]Square {
 	for{
 		random_row1:=rand.Intn(rows)+1
 		random_row2:=rand.Intn(rows)+1
@@ -234,45 +234,45 @@ func SameRow(col1,col2,row1,row2 int)bool{
 	return row1==row2 && math.Abs(float64(col2-col1))==1
 }
 
-// check if cell are in the same col
+// check if cell are in the same Col
 func SameCol(col1,col2,row1,row2 int)bool{
 	return col1==col2 && math.Abs(float64(row2-row1))==1
 }
 
-// check if id are different
-func DifferentId(r1,r2,c1,c2 int,grid []square)(bool,int,int){
+// check if Id are different
+func DifferentId(r1,r2,c1,c2 int,grid []Square)(bool,int,int){
 	var id1,id2 int
 	for _,square := range grid{
-		if square.row == r1 && square.col == c1{
-			id1 = square.id
+		if square.Row == r1 && square.Col == c1{
+			id1 = square.Id
 		}
-		if square.row == r2 && square.col == c2{
-			id2 = square.id
+		if square.Row == r2 && square.Col == c2{
+			id2 = square.Id
 		}
 	}
 	return id1!=id2,id1,id2
 }
 
 // break the "wall" in the middle of 2 cell
-func BreakWall(grid []square, num1,num2,row1,row2,col1,col2 int){
+func BreakWall(grid []Square, num1,num2,row1,row2,col1,col2 int){
 	var max int = Max(num1,num2)
 	var min int = Min(num1,num2)
 
 	for i, square := range grid{
-		if square.row == row1 && square.col == col1 && square.id == max{
+		if square.Row == row1 && square.Col == col1 && square.Id == max{
 			switch {
 			case row1>row2:
-				grid[i].side_front = false
-				grid[i-cols].side_back = false
+				grid[i].Side_front = false
+				grid[i-cols].Side_back = false
 			case col1>col2:
-				grid[i].side_left = false
-				grid[i-1].side_right = false
+				grid[i].Side_left = false
+				grid[i-1].Side_right = false
 			case row2>row1:
-				grid[i].side_back = false
-				grid[i+cols].side_front = false
+				grid[i].Side_back = false
+				grid[i+cols].Side_front = false
 			case col2>col1:
-				grid[i].side_right = false
-				grid[i+1].side_left = false
+				grid[i].Side_right = false
+				grid[i+1].Side_left = false
 			}
 			grid = ChangeValues(max,min,grid)
 		}
@@ -280,10 +280,10 @@ func BreakWall(grid []square, num1,num2,row1,row2,col1,col2 int){
 }
 
 // change all max to min
-func ChangeValues(max int,min int,grid []square)[]square{
+func ChangeValues(max int,min int,grid []Square)[]Square {
 	for i, square:= range grid{
-		if square.id == max{
-			grid[i].id = min
+		if square.Id == max{
+			grid[i].Id = min
 		}
 	}
 	return grid
@@ -305,8 +305,8 @@ func Min(num1,num2 int)int{
 	return num2
 }
 
-// print the grid data in terminal
-func PrintGrid(grid []square){
+// print the Grid data in terminal
+func PrintGrid(grid []Square){
 	for _,square := range grid{
 		fmt.Println(square)
 	}
@@ -320,8 +320,8 @@ func httpLink(addr string) string {
 	return "http://" + addr
 }
 
-func (h *grid)AddStartStop(ctx *canvas.Context){
-	h.ctx.SetFont("10px Arial")
-	h.ctx.FillText("St", 52, 45)
-	h.ctx.FillText("Fi", 235, 225)
+func (h *Grid)AddStartStop(ctx *canvas.Context){
+	h.Ctx.SetFont("10px Arial")
+	h.Ctx.FillText("St", 52, 45)
+	h.Ctx.FillText("Fi", 235, 225)
 }
