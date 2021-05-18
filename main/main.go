@@ -13,22 +13,18 @@ import (
 	"github.com/fzipp/canvas"
 )
 
-/*
-PART 1 -CREATE A LABYRINTH-
-
-PART 2-SOLVE A LABYRINTH-
-Dijkstra's algoritm to resolve it
- */
-
+//CREATE A LABIRINTH
+//
 const rows int = 10
 const cols int = 10
 const sides int = 4
 const offset float64 = 20.0
 
+type Maze solver.Grid
+
 func main() {
 	http := flag.String("http", ":8080", "HTTP service address (e.g., '127.0.0.1:8080' or just ':8080')")
 	flag.Parse()
-
 	fmt.Println("Listening on " + httpLink(*http))
 	err := canvas.ListenAndServe(*http, run,
 		canvas.Title("Labyrinth"),
@@ -42,11 +38,11 @@ func main() {
 
 // run function
 func run(ctx *canvas.Context) {
+	var h = &Maze{Ctx: ctx}
 	rand.Seed(time.Now().UTC().UnixNano())
 	lab := CreateStarter()
 	ctx.SetLineWidth(2)
 	ctx.SetStrokeStyleString("#8806ce")
-	h := &Grid{Ctx: ctx}
 	h.Squares = lab
 	fmt.Println("Start animation...")
 	for {
@@ -62,7 +58,7 @@ func run(ctx *canvas.Context) {
 				fmt.Println("Succefully finished the algoritm...")
 				h.AddStartStop(ctx)
 				ctx.Flush()
-				solver.GetNodes(h)
+				//solver.GetNodes(h)
 				return
 			}else{
 				h.update()
@@ -74,27 +70,16 @@ func run(ctx *canvas.Context) {
 	}
 }
 
-type Grid struct{
-	Squares []Square
-	Ctx     *canvas.Context
-	X,Y     float64
-}
-
-type Square struct {
-	Side_front, Side_back, Side_left, Side_right bool
-	Id, Row, Col                                 int
-	Ctx                                          *canvas.Context
-}
 
 // update func
-func (h *Grid) update(){
+func (h *Maze) update(){
 	h.Squares = RandomSquares(h.Squares)
 }
 
-// create a starter Grid
-func CreateStarter()[]Square {
+// create a starter Maze
+func CreateStarter()[]solver.Square {
 	var id int = 1
-	grid := make([]Square,rows*cols)
+	grid := make([]solver.Square,rows*cols)
 	for row:=0; row < rows; row++ {
 		for col := 0; col < cols; col++ {
 			for side := 0; side < sides; side++ {
@@ -119,7 +104,7 @@ func CreateStarter()[]Square {
 }
 
 // draw labyrinth
-func (h *Grid) draw(ctx *canvas.Context) {
+func (h *Maze) draw(ctx *canvas.Context) {
 	ctx.ClearRect(0,0,1000,1000)
 	h.X = 50.0
 	h.Y = 50.0
@@ -187,7 +172,7 @@ func (h *Grid) draw(ctx *canvas.Context) {
 }
 
 // exit condition
-func exit(grid []Square)bool{
+func exit(grid []solver.Square)bool{
 	var target int
 	for i, square := range grid{
 		if i==0{
@@ -202,7 +187,7 @@ func exit(grid []Square)bool{
 }
 
 // generate 2 random num that are Id's adjoins
-func RandomSquares(grid []Square)[]Square {
+func RandomSquares(grid []solver.Square)[]solver.Square {
 	for{
 		random_row1:=rand.Intn(rows)+1
 		random_row2:=rand.Intn(rows)+1
@@ -240,7 +225,7 @@ func SameCol(col1,col2,row1,row2 int)bool{
 }
 
 // check if Id are different
-func DifferentId(r1,r2,c1,c2 int,grid []Square)(bool,int,int){
+func DifferentId(r1,r2,c1,c2 int,grid []solver.Square)(bool,int,int){
 	var id1,id2 int
 	for _,square := range grid{
 		if square.Row == r1 && square.Col == c1{
@@ -254,7 +239,7 @@ func DifferentId(r1,r2,c1,c2 int,grid []Square)(bool,int,int){
 }
 
 // break the "wall" in the middle of 2 cell
-func BreakWall(grid []Square, num1,num2,row1,row2,col1,col2 int){
+func BreakWall(grid []solver.Square, num1,num2,row1,row2,col1,col2 int){
 	var max int = Max(num1,num2)
 	var min int = Min(num1,num2)
 
@@ -280,7 +265,7 @@ func BreakWall(grid []Square, num1,num2,row1,row2,col1,col2 int){
 }
 
 // change all max to min
-func ChangeValues(max int,min int,grid []Square)[]Square {
+func ChangeValues(max int,min int,grid []solver.Square)[]solver.Square {
 	for i, square:= range grid{
 		if square.Id == max{
 			grid[i].Id = min
@@ -305,8 +290,8 @@ func Min(num1,num2 int)int{
 	return num2
 }
 
-// print the Grid data in terminal
-func PrintGrid(grid []Square){
+// print the Maze data in terminal
+func PrintGrid(grid []solver.Square){
 	for _,square := range grid{
 		fmt.Println(square)
 	}
@@ -320,7 +305,7 @@ func httpLink(addr string) string {
 	return "http://" + addr
 }
 
-func (h *Grid)AddStartStop(ctx *canvas.Context){
+func (h *Maze)AddStartStop(ctx *canvas.Context){
 	h.Ctx.SetFont("10px Arial")
 	h.Ctx.FillText("St", 52, 45)
 	h.Ctx.FillText("Fi", 235, 225)

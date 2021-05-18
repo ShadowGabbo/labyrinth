@@ -1,6 +1,8 @@
 package solver
 
-	//Breadth-first search algorithm
+import "github.com/fzipp/canvas"
+
+//Breadth-first search algorithm
 	//getting nodes:
 	//	-start from the start
 	//	-look down/sx/up/dx
@@ -13,6 +15,18 @@ package solver
 	//		-if i cant go left or right isnt a node, and so on...
 	//		-count node the min is the solver
 
-func GetNodes(grid *Grid){
 
+type Grid struct{
+	Squares []Square
+	Ctx     *canvas.Context
+	X,Y     float64
 }
+
+type Square struct {
+	Side_front, Side_back, Side_left, Side_right bool
+	Id, Row, Col                                 int
+	Ctx                                          *canvas.Context
+}
+
+//func GetNodes(label *Grid){
+//}
