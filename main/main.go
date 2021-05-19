@@ -8,10 +8,11 @@ import (
 	"math/rand"
 	"time"
 
-	"../solver"
-
+	"github.com/ShadowGabbo/labyrinth/solver"
 	"github.com/fzipp/canvas"
 )
+
+type MyGrid solver.Grid
 
 //CREATE A LABIRINTH
 //
@@ -20,7 +21,6 @@ const cols int = 10
 const sides int = 4
 const offset float64 = 20.0
 
-type Maze solver.Grid
 
 func main() {
 	http := flag.String("http", ":8080", "HTTP service address (e.g., '127.0.0.1:8080' or just ':8080')")
@@ -38,7 +38,7 @@ func main() {
 
 // run function
 func run(ctx *canvas.Context) {
-	var h = &Maze{Ctx: ctx}
+	var h = &MyGrid{Ctx: ctx}
 	rand.Seed(time.Now().UTC().UnixNano())
 	lab := CreateStarter()
 	ctx.SetLineWidth(2)
@@ -58,7 +58,7 @@ func run(ctx *canvas.Context) {
 				fmt.Println("Succefully finished the algoritm...")
 				h.AddStartStop(ctx)
 				ctx.Flush()
-				//solver.GetNodes(h)
+				solver.GetNodes(h)
 				return
 			}else{
 				h.update()
@@ -72,7 +72,7 @@ func run(ctx *canvas.Context) {
 
 
 // update func
-func (h *Maze) update(){
+func (h *MyGrid) update(){
 	h.Squares = RandomSquares(h.Squares)
 }
 
@@ -104,7 +104,7 @@ func CreateStarter()[]solver.Square {
 }
 
 // draw labyrinth
-func (h *Maze) draw(ctx *canvas.Context) {
+func (h *MyGrid) draw(ctx *canvas.Context) {
 	ctx.ClearRect(0,0,1000,1000)
 	h.X = 50.0
 	h.Y = 50.0
@@ -305,7 +305,7 @@ func httpLink(addr string) string {
 	return "http://" + addr
 }
 
-func (h *Maze)AddStartStop(ctx *canvas.Context){
+func (h *MyGrid)AddStartStop(ctx *canvas.Context){
 	h.Ctx.SetFont("10px Arial")
 	h.Ctx.FillText("St", 52, 45)
 	h.Ctx.FillText("Fi", 235, 225)

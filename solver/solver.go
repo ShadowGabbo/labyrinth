@@ -28,5 +28,6 @@ type Square struct {
 	Ctx                                          *canvas.Context
 }
 
-//func GetNodes(label *Grid){
-//}
+func GetNodes(grid *Grid){
+
+}
