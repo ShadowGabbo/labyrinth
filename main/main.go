@@ -11,6 +11,11 @@ import (
 	"github.com/fzipp/canvas"
 )
 
+type Node struct {
+	row int
+	col int
+}
+
 type Grid struct{
 	Squares []Square
 	Ctx     *canvas.Context
@@ -66,7 +71,7 @@ func run(ctx *canvas.Context) {
 				fmt.Println("Succefully finished the algoritm...")
 				h.AddStartStop(ctx)
 				ctx.Flush()
-				solver.GetNodes(h)
+				nodes := h.GetNodes()
 				return
 			}else{
 				h.update()
@@ -331,3 +336,7 @@ func (h *Grid)AddStartStop(ctx *canvas.Context){
 //		-if im in a path and i will be in a wall is a node
 //		-if i cant go left or right isnt a node, and so on...
 //		-count node the min is the solver
+
+func (h *Grid)GetNodes()[]Node{
+
+}
