@@ -8,14 +8,22 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/ShadowGabbo/labyrinth/solver"
 	"github.com/fzipp/canvas"
 )
 
-type MyGrid solver.Grid
+type Grid struct{
+	Squares []Square
+	Ctx     *canvas.Context
+	X,Y     float64
+}
+
+type Square struct {
+	Side_front, Side_back, Side_left, Side_right bool
+	Id, Row, Col                                 int
+	Ctx                                          *canvas.Context
+}
 
 //CREATE A LABIRINTH
-//
 const rows int = 10
 const cols int = 10
 const sides int = 4
@@ -38,7 +46,7 @@ func main() {
 
 // run function
 func run(ctx *canvas.Context) {
-	var h = &MyGrid{Ctx: ctx}
+	var h = &Grid{Ctx: ctx}
 	rand.Seed(time.Now().UTC().UnixNano())
 	lab := CreateStarter()
 	ctx.SetLineWidth(2)
@@ -72,14 +80,14 @@ func run(ctx *canvas.Context) {
 
 
 // update func
-func (h *MyGrid) update(){
+func (h *Grid) update(){
 	h.Squares = RandomSquares(h.Squares)
 }
 
 // create a starter Maze
-func CreateStarter()[]solver.Square {
+func CreateStarter()[]Square {
 	var id int = 1
-	grid := make([]solver.Square,rows*cols)
+	grid := make([]Square,rows*cols)
 	for row:=0; row < rows; row++ {
 		for col := 0; col < cols; col++ {
 			for side := 0; side < sides; side++ {
@@ -104,7 +112,7 @@ func CreateStarter()[]solver.Square {
 }
 
 // draw labyrinth
-func (h *MyGrid) draw(ctx *canvas.Context) {
+func (h *Grid) draw(ctx *canvas.Context) {
 	ctx.ClearRect(0,0,1000,1000)
 	h.X = 50.0
 	h.Y = 50.0
@@ -172,7 +180,7 @@ func (h *MyGrid) draw(ctx *canvas.Context) {
 }
 
 // exit condition
-func exit(grid []solver.Square)bool{
+func exit(grid []Square)bool{
 	var target int
 	for i, square := range grid{
 		if i==0{
@@ -187,7 +195,7 @@ func exit(grid []solver.Square)bool{
 }
 
 // generate 2 random num that are Id's adjoins
-func RandomSquares(grid []solver.Square)[]solver.Square {
+func RandomSquares(grid []Square)[]Square {
 	for{
 		random_row1:=rand.Intn(rows)+1
 		random_row2:=rand.Intn(rows)+1
@@ -225,7 +233,7 @@ func SameCol(col1,col2,row1,row2 int)bool{
 }
 
 // check if Id are different
-func DifferentId(r1,r2,c1,c2 int,grid []solver.Square)(bool,int,int){
+func DifferentId(r1,r2,c1,c2 int,grid []Square)(bool,int,int){
 	var id1,id2 int
 	for _,square := range grid{
 		if square.Row == r1 && square.Col == c1{
@@ -239,7 +247,7 @@ func DifferentId(r1,r2,c1,c2 int,grid []solver.Square)(bool,int,int){
 }
 
 // break the "wall" in the middle of 2 cell
-func BreakWall(grid []solver.Square, num1,num2,row1,row2,col1,col2 int){
+func BreakWall(grid []Square, num1,num2,row1,row2,col1,col2 int){
 	var max int = Max(num1,num2)
 	var min int = Min(num1,num2)
 
@@ -265,7 +273,7 @@ func BreakWall(grid []solver.Square, num1,num2,row1,row2,col1,col2 int){
 }
 
 // change all max to min
-func ChangeValues(max int,min int,grid []solver.Square)[]solver.Square {
+func ChangeValues(max int,min int,grid []Square)[]Square {
 	for i, square:= range grid{
 		if square.Id == max{
 			grid[i].Id = min
@@ -291,7 +299,7 @@ func Min(num1,num2 int)int{
 }
 
 // print the Maze data in terminal
-func PrintGrid(grid []solver.Square){
+func PrintGrid(grid []Square){
 	for _,square := range grid{
 		fmt.Println(square)
 	}
@@ -305,8 +313,21 @@ func httpLink(addr string) string {
 	return "http://" + addr
 }
 
-func (h *MyGrid)AddStartStop(ctx *canvas.Context){
+func (h *Grid)AddStartStop(ctx *canvas.Context){
 	h.Ctx.SetFont("10px Arial")
 	h.Ctx.FillText("St", 52, 45)
 	h.Ctx.FillText("Fi", 235, 225)
 }
+
+//Breadth-first search algorithm
+//getting nodes:
+//	-start from the start
+//	-look down/sx/up/dx
+//	-boolean array if visited
+//	-for rows:
+//		-first node at the start
+//		-if im in a path and i was in a wall is a node
+//		-if i can go up or down is a node
+//		-if im in a path and i will be in a wall is a node
+//		-if i cant go left or right isnt a node, and so on...
+//		-count node the min is the solver
