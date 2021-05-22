@@ -24,11 +24,12 @@ type Grid struct{
 
 type Square struct {
 	Side_front, Side_back, Side_left, Side_right bool
+	Node bool
 	Id, Row, Col                                 int
 	Ctx                                          *canvas.Context
 }
 
-//CREATE A LABIRINTH
+//CREATE A LABIRINT
 const rows int = 10
 const cols int = 10
 const sides int = 4
@@ -67,17 +68,18 @@ func run(ctx *canvas.Context) {
 			}
 		default:
 			if exit(lab){
-				PrintGrid(lab)
 				fmt.Println("Succefully finished the algoritm...")
 				h.AddStartStop(ctx)
 				ctx.Flush()
-				nodes := h.GetNodes()
+				h.PrintGrid()
+				h.GetNodes()
+				h.PrintNodes()
 				return
 			}else{
 				h.update()
 				h.draw(ctx)
 				ctx.Flush()
-				time.Sleep(time.Second / 100)
+				time.Sleep(time.Second / 1500)
 			}
 		}
 	}
@@ -304,8 +306,8 @@ func Min(num1,num2 int)int{
 }
 
 // print the Maze data in terminal
-func PrintGrid(grid []Square){
-	for _,square := range grid{
+func (h *Grid)PrintGrid(){
+	for _,square := range h.Squares{
 		fmt.Println(square)
 	}
 }
@@ -337,6 +339,64 @@ func (h *Grid)AddStartStop(ctx *canvas.Context){
 //		-if i cant go left or right isnt a node, and so on...
 //		-count node the min is the solver
 
-func (h *Grid)GetNodes()[]Node{
 
+func (h *Grid)GetNodes(){
+	direction := map[string]bool{"up":false, "back":false, "right":false, "left":false}
+
+	//first/last node
+	h.Squares[0].Node = true
+	h.Squares[len(h.Squares)-1].Node = true
+
+	//direction of the start
+	if h.Squares[0].Side_right==false {
+		direction["right"] = true
+	}
+	if h.Squares[0].Side_back==false{
+		direction["back"] = true
+	}
+	//other nodes
+	fmt.Println("Starting direction:",direction)
+	for i:=1;i<len(h.Squares);i++{
+		if direction["right"] {
+			h.GoRight()
+			direction["right"] = false
+		}else if direction["back"]{
+			h.GoBack()
+			direction["back"] = false
+		}
+	}
+	return
+}
+
+func (h *Grid)GoBack(){
+	fmt.Print("Back: ")
+	for i:=cols;i<rows*cols;i+=cols{
+		if h.Squares[i].Side_back{
+			h.Squares[i].Node = true
+			fmt.Print("(",h.Squares[i].Row,",",h.Squares[i].Col,")")
+			break
+		}
+	}
+	fmt.Println()
+}
+
+func (h *Grid)GoRight(){
+	fmt.Print("Right: ")
+	for i:=0;i<cols;i++{
+		if h.Squares[i].Side_right{
+			h.Squares[i].Node = true
+			fmt.Print("(",h.Squares[i].Row,",",h.Squares[i].Col,")")
+			break
+		}
+	}
+	fmt.Println()
+}
+
+func (h *Grid)PrintNodes(){
+	fmt.Print("Nodes: ")
+	for i:=0;i<len(h.Squares);i++{
+		if h.Squares[i].Node{
+			fmt.Print("(",h.Squares[i].Row,",",h.Squares[i].Col,") ")
+		}
+	}
 }
